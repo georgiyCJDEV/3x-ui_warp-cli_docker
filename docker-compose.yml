@@ -1,0 +1,85 @@
+services:
+  warp:
+    build:
+      context: ./warp-cli
+      dockerfile: Dockerfile
+    image: warp_cli_proxy
+    container_name: warp-proxy
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ${WARP_DATA}:/var/lib/cloudflare-warp
+    environment:
+      - TZ=Europe/Helsinki
+    restart: unless-stopped
+    networks:
+      - 3xui-net
+
+  3xui-alt:
+    build:
+      context: ./3x-ui
+      dockerfile: Dockerfile
+    image: 3xui_app:latest
+    container_name: 3xui_app_alt
+    volumes:
+      - ${DB}:/etc/x-ui/
+      - ${CERT}:/root/cert/
+    environment:
+      XRAY_VMESS_AEAD_FORCED: "false"
+      XUI_ENABLE_FAIL2BAN: "true"
+      TZ: Europe/Helsinki
+    tty: true
+    ports:
+      # Веб-панель доступна только с localhost (для SSH туннеля)
+      - "127.0.0.1:2087:2087"
+      # Прокси-трафик доступен извне
+      - "8443:443"
+    networks:
+      - 3xui-net
+    restart: unless-stopped
+
+  3xui-canary:
+    image: 3xui_app:latest
+    container_name: 3xui_app_canary
+    volumes:
+      - ${DB_CANARY}:/etc/x-ui/
+      - ${CERT_CANARY}:/root/cert/
+    environment:
+      XRAY_VMESS_AEAD_FORCED: "false"
+      XUI_ENABLE_FAIL2BAN: "true"
+      TZ: Europe/Helsinki
+    tty: true
+    ports:
+      # Веб-панель доступна только с localhost (для SSH туннеля)
+      - "127.0.0.1:60323:2053"
+      # Прокси-трафик доступен извне
+      - "50051:443"
+    networks:
+      - 3xui-net
+    restart: unless-stopped
+
+#  3xui-primary:
+#    image: 3xui_app:latest
+#    container_name: 3xui_app_primary
+#    volumes:
+#      - ${DB_PRIMARY}:/etc/x-ui/
+#      - ${CERT_PRIMARY}:/root/cert/
+#    environment:
+#      XRAY_VMESS_AEAD_FORCED: "false"
+#      XUI_ENABLE_FAIL2BAN: "true"
+#      TZ: Europe/Helsinki
+#    tty: true
+#    ports:
+      # Веб-панель доступна только с localhost (для SSH туннеля)
+#      - "127.0.0.1:31257:31257"
+      # Прокси-трафик доступен извне
+#      - "443:443"
+#    networks:
+#      - 3xui-net
+#    restart: unless-stopped
+
+networks:
+  3xui-net:
+    external: true
