@@ -21,7 +21,7 @@ RUN ls -la /app/src/web/ && cat /app/src/web/package.json || { \
     }
 
 # Build frontend
-WORKDIR /app/src/web
+WORKDIR /app/src/frontend
 RUN npm install --loglevel verbose
 RUN npm run build
 
@@ -29,13 +29,12 @@ RUN npm run build
 WORKDIR /app/src
 ENV CGO_ENABLED=1
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
-
 RUN go build -ldflags "-w -s" -o build/x-ui main.go
 RUN ./DockerInit.sh
 
 # Stage: Final Image
 FROM alpine
-ENV TZ=Europe/Helsinki
+ENV TZ=Europe/Amsterdam
 WORKDIR /app
 
 RUN apk add --no-cache --update \
