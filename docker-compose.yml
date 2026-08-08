@@ -15,7 +15,7 @@ services:
       - TZ:Europe/Amsterdam
     restart: unless-stopped
     networks:
-      - ${XUI_NETWORK_NAME}
+      - 3xui-net
 
   3xui-app:
     build:
@@ -37,9 +37,9 @@ services:
       # Прокси-трафик доступен извне
       - "${HTTPS_OUT_PORT}:443"
     networks:
-      - ${XUI_NETWORK_NAME}
+      - 3xui-net
     restart: unless-stopped
 
 networks:
-  ${XUI_NETWORK_NAME}:
+  3xui-net:
     external: true
