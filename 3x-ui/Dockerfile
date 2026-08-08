@@ -8,11 +8,19 @@ RUN apk --no-cache --update add \
   build-base \
   gcc \
   curl \
-  unzip git
+  unzip \
+  git \
+  nodejs \
+  npm
 
 # Clone original github repo
 RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /app/src
 
+# Build frontend
+WORKDIR /app/src/web
+RUN npm install && npm run build
+
+# Compile Go
 WORKDIR /app/src
 ENV CGO_ENABLED=1
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
