@@ -1,32 +1,44 @@
+# ========================================================
+# Stage: Frontend (Vite)
+# ========================================================
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
+
+RUN --no-cache --update add git
+
+# Clone original github repo
+RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /app/src
+
+WORKDIR /src/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+COPY internal/web/translation /src/internal/web/translation
+RUN npm run build
+
+# ========================================================
 # Stage: Builder
+# ========================================================
 FROM golang:1.26-alpine AS builder
 WORKDIR /app
+ARG TARGETARCH
 
 RUN apk --no-cache --update add \
   build-base \
   gcc \
   curl \
-  unzip \
-  git \
-  nodejs \
-  npm
+  unzip
 
-# Clone original github repo
-RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /app/src
+COPY . .
+COPY --from=frontend /src/internal/web/dist ./internal/web/dist
 
-# Build frontend
-WORKDIR /app/src/frontend
-RUN npm install --loglevel verbose
-RUN npm run build
-
-# Compile Go
-WORKDIR /app/src
 ENV CGO_ENABLED=1
 ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
 RUN go build -ldflags "-w -s" -o build/x-ui main.go
-RUN ./DockerInit.sh
+RUN ./DockerInit.sh "$TARGETARCH"
 
-# Stage: Final Image
+# ========================================================
+# Stage: Final Image of 3x-ui
+# ========================================================
 FROM alpine
 ENV TZ=Europe/Amsterdam
 WORKDIR /app
@@ -39,9 +51,11 @@ RUN apk add --no-cache --update \
   curl \
   openssl
 
-COPY --from=builder /app/src/build/ /app/
-COPY --from=builder /app/src/DockerEntrypoint.sh /app/
-COPY --from=builder /app/src/x-ui.sh /usr/bin/x-ui
+COPY --from=builder /app/build/ /app/
+COPY --from=builder /app/DockerEntrypoint.sh /app/
+COPY --from=builder /app/x-ui.sh /usr/bin/x-ui
+COPY --from=builder /app/internal/web/translation /app/internal/web/translation
+
 
 # Configure fail2ban
 RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
@@ -50,9 +64,16 @@ RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
   && sed -i "s/^\[sshd\]$/&\nenabled = false/" /etc/fail2ban/jail.local \
   && sed -i "s/#allowipv6 = auto/allowipv6 = auto/g" /etc/fail2ban/fail2ban.conf
 
-RUN chmod +x /app/DockerEntrypoint.sh /app/x-ui /usr/bin/x-ui
+RUN chmod +x \
+  /app/DockerEntrypoint.sh \
+  /app/x-ui \
+  /usr/bin/x-ui
 
+ENV XUI_IN_DOCKER="true"
+ENV XUI_MAIN_FOLDER="/app"
 ENV XUI_ENABLE_FAIL2BAN="true"
+ENV XUI_DB_TYPE=""
+ENV XUI_DB_DSN=""
 EXPOSE 2053
 VOLUME [ "/etc/x-ui" ]
 CMD [ "./x-ui" ]
