@@ -23,9 +23,13 @@ services:
       dockerfile: Dockerfile
     image: 3xui_app:latest
     container_name: 3xui-app
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     volumes:
       - ${DB}:/etc/x-ui/
       - ${CERT}:/root/cert/
+      - $PWD/acme/:/root/.acme.sh/
     environment:
       XRAY_VMESS_AEAD_FORCED: "false"
       XUI_ENABLE_FAIL2BAN: "true"
@@ -33,7 +37,7 @@ services:
     tty: true
     ports:
       # Веб-панель доступна только с localhost (для SSH туннеля)
-      - "127.0.0.1:${PANEL_PORT}:${PANEL_PORT}"
+      - "2053:2053"
       # Прокси-трафик доступен извне
       - "${HTTPS_OUT_PORT}:443"
     networks:
