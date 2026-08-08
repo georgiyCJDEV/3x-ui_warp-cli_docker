@@ -14,12 +14,15 @@ RUN apk --no-cache --update add \
 # Clone original github repo
 RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /app/src
 
+RUN ls -la /app/src/web/ && cat /app/src/web/package.json || { \
+        echo "ERROR: web/package.json not found. Repo structure may have changed."; \
+        find /app/src -name "package.json" -type f; \
+        exit 1; \
+    }
+
 # Build frontend
 WORKDIR /app/src/web
-RUN npm install --loglevel verbose 2>&1 | tee /tmp/npm-install.log; \
-    cat /tmp/npm-install.log; \
-    exit 1 \
-
+RUN npm install --loglevel verbose
 RUN npm run build
 
 # Compile Go
