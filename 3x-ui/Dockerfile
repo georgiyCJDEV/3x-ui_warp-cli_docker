@@ -18,7 +18,11 @@ RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /app/src
 
 # Build frontend
 WORKDIR /app/src/web
-RUN npm install && npm run build
+RUN npm install --loglevel verbose 2>&1 | tee /tmp/npm-install.log; \
+    cat /tmp/npm-install.log; \
+    exit 1 \
+
+RUN npm run build
 
 # Compile Go
 WORKDIR /app/src
