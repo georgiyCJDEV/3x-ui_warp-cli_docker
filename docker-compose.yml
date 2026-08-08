@@ -12,12 +12,12 @@ services:
     volumes:
       - ${WARP_DATA}:/var/lib/cloudflare-warp
     environment:
-      - TZ=Europe/Helsinki
+      - TZ:Europe/Amsterdam
     restart: unless-stopped
     networks:
-      - 3xui-net
+      - ${XUI_NETWORK_NAME}
 
-  3xui-alt:
+  3xui-app:
     build:
       context: ./3x-ui
       dockerfile: Dockerfile
@@ -37,9 +37,9 @@ services:
       # Прокси-трафик доступен извне
       - "${HTTPS_OUT_PORT}:443"
     networks:
-      - 3xui-net
+      - ${XUI_NETWORK_NAME}
     restart: unless-stopped
 
 networks:
-  3xui-net:
+  ${XUI_NETWORK_NAME}:
     external: true
