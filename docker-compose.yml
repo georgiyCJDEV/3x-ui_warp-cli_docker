@@ -37,7 +37,7 @@ services:
     tty: true
     ports:
       # Веб-панель доступна только с localhost (для SSH туннеля)
-      - "2053:2053"
+      - "127.0.0.1:${PANEL_PORT}:${PANEL_PORT}"
       # Прокси-трафик доступен извне
       - "${HTTPS_OUT_PORT}:443"
     networks:
