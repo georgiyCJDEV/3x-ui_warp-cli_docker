@@ -75,8 +75,7 @@ RUN chmod +x \
 ENV XUI_IN_DOCKER="true"
 ENV XUI_MAIN_FOLDER="/app"
 ENV XUI_ENABLE_FAIL2BAN="true"
-ENV XUI_DB_TYPE=""
-ENV XUI_DB_DSN=""
+ENV XUI_DB_TYPE="sqlite"
 EXPOSE 2053
 VOLUME [ "/etc/x-ui" ]
 CMD [ "./x-ui" ]

@@ -31,8 +31,8 @@ services:
       - ${CERT}:/root/cert/
       - $PWD/acme/:/root/.acme.sh/
     environment:
-      XRAY_VMESS_AEAD_FORCED: "false"
       XUI_ENABLE_FAIL2BAN: "true"
+      XUI_LOG_LEVEL: "error"
       TZ: Europe/Amsterdam
     tty: true
     ports:
