@@ -1,6 +1,4 @@
-# ========================================================
 # Stage: Builder
-# ========================================================
 FROM golang:1.26-alpine AS builder
 WORKDIR /app
 
@@ -32,9 +30,7 @@ ENV CGO_CFLAGS="-D_LARGEFILE64_SOURCE"
 RUN go build -ldflags "-w -s" -o build/x-ui main.go
 RUN ./DockerInit.sh
 
-# ========================================================
 # Stage: Final Image
-# ========================================================
 FROM alpine
 ENV TZ=Europe/Helsinki
 WORKDIR /app
