@@ -19,7 +19,7 @@ RUN npm ci && npm run build
 # ========================================================
 # Stage: Builder
 # ========================================================
-FROM golang:1.26-alpine AS builder
+FROM golang:1.27-alpine AS builder
 ARG TARGETARCH
 
 RUN apk --no-cache --update add \
