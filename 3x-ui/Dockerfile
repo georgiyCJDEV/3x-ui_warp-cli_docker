@@ -3,8 +3,8 @@
 # ========================================================
 
 FROM alpine/git AS source
-# Clone original github repo inside container
-RUN git clone --depth 1 https://github.com/MHSanaei/3x-ui.git /src
+# Clone original github repo inside container. Using 3.6.0 tag version
+RUN git clone --branch v3.6.0 --depth 1 https://github.com/MHSanaei/3x-ui.git /src
 
 # ========================================================
 # Stage: Frontend (Vite)
